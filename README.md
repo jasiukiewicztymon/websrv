@@ -10,14 +10,22 @@ The Websrv files are divided into **2 paths**. One of them is a **config folder*
 /etc/websrv
 |-- config
 |     `-- websrv.config
+|     `-- cert
+|             `-- "all the certifications"
 |-- files
 |     `-- "http/https sub-servers folder"
-|             `-- "all sub.server files"
+|             `-- "all sub-server files"
 |-- index.js
 ```
 
 ## Configuration file
 
+Example of the configuration file is based on a object for each sub-server. We can find all the proprieties needed to respond to a request.
+
 ```yml 
-sub-server-name:
+sub-servers: [{
+    name: "sub-server-name",
+    type: "http",
+    build-command: "build command"
+}]
 ```
