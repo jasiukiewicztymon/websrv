@@ -11,7 +11,8 @@ The Websrv files are divided into **2 paths**. One of them is a **config folder*
 |-- config
 |     `-- websrv.config
 |     `-- cert
-|             `-- "all the certifications"
+|             `-- cert.pem
+|             `-- key.pem
 |-- files
 |     `-- "http/https sub-servers folder"
 |             `-- "all sub-server files"
