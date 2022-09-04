@@ -55,6 +55,7 @@ const contentTypes = {
     "tiff": "image/tiff",
     "ts": "application/typescript",
     "ttf": "font/ttf",
+    "txt": "text/plain",
     "vsd": "application/vnd.visio",
     "wav": "audio/x-wav",
     "weba": "audio/webm",
@@ -73,19 +74,65 @@ const contentTypes = {
     "7z": "application/x-7z-compressed"
 }
 
+function serverBuild(req, res) {
+    var parsedURL = url.parse(req.url, true);
+    var resContentType = "text/plain";
+    for (ext in contentTypes) {
+        if (parsedURL.pathname.endsWith(ext)) 
+            resContentType = contentTypes[ext];
+    }
+
+    if (parsedURL.hostname == subsrv.domain) {
+        if (fs.existsSync(`./files/${subsrv.name}${parsedURL.pathname}`)) {
+            res.writeHead(200, { 'Content-Type': resContentType })
+            res.write(fs.readFileSync(`./files/${subsrv.name}/${parsedURL.pathname}`))
+        }
+        else {
+            if (subsrv["file-404"] != null) {                       
+                res.writeHead(404, { 'Content-Type': resContentType })
+                res.write(fs.readFileSync(`./files/${subsrv.name}/${subsrv["file-404"]}`))
+            }
+        }
+        res.end()
+    }
+}
+/*
 try {
     const websrvConfig = yaml.load(fs.readFileSync('./config/websrv.config'));
     websrvConfig['sub-servers'].forEach(subsrv => {
+        // build commands
+        
+        // servers 
         if (subsrv.type == 'http') {
-            http.createServer(function (req, res) {
-                
-            })
+            http.createServer(function (req, res) { serverBuild(req, res) }).listen(subsrv.port)
         } else {
-            https.createServer(function (req, res) {
-                
-            })
+            /* 
+            ========================================
+            > SSL : generate self-signed certificate
+            ========================================
+
+            openssl genrsa -out key.pem
+            openssl req -new -key key.pem -out csr.pem
+            openssl x509 -req -days 9999 -in csr.pem -signkey key.pem -out cert.pem
+            rm csr.pem
+
+            
+            const ssl = {
+                key: fs.readFileSync('key.pem'),
+                cert: fs.readFileSync('cert.pem')
+            };
+
+            https.createServer(ssl, function (req, res) { serverBuild(req, res) }).listen(subsrv.port)
         }
     })
-} catch (e) {
-    console.error('Error: Configuration file not found or impossible to open');
+} catch (err) {
+    console.error(err)
+    //console.error('Error: Configuration file not found or impossible to open');
 }
+*/
+
+http.createServer(function(req, res) {
+    res.writeHead(200, { "Content-Type": "text/html" })
+    res.write('<h1>Hello world</h1>')
+    res.end()
+}).listen(80, '0.0.0.0');
