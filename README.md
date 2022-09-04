@@ -29,6 +29,7 @@ sub-servers: [{
     type: "http",
     build-command: ["build command", "build command"],
     content-type: "text/plain",
+    domain: "src.gitproject.ch",
     port: 8080
 }]
 ```
