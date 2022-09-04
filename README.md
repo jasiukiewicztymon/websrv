@@ -26,6 +26,7 @@ Example of the configuration file is based on a object for each sub-server. We c
 sub-servers: [{
     name: "sub-server-name",
     type: "http",
-    build-command: "build command"
+    build-command: "build command",
+    content-type: "text/plain"
 }]
 ```
