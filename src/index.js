@@ -4,6 +4,10 @@ const url   = require('url');
 const http  = require('http')
 const https = require('https')
 
+/*
+    The content type can be extended by the config file. You have to use a YAML object with the key as the extension of the file and the content-type as the value.
+*/
+
 const contentTypes = {
     "aac": "audio/aac",
     "abw": "application/x-abiword",
@@ -74,6 +78,30 @@ const contentTypes = {
     "7z": "application/x-7z-compressed"
 }
 
+/*
+    ============================================
+    testServerBuild()
+    ============================================
+    
+    Use this function in WAN IP test.
+*/
+
+function testServerBuild() {
+    http.createServer(function(req, res) {
+        res.writeHead(200, { "Content-Type": "text/html" })
+        res.write('<h1>Hello world</h1>')
+        res.end()
+    }).listen(80, '0.0.0.0');
+}
+
+/*
+    ============================================
+    serverBuild()
+    ============================================
+    
+    Build the server response part for HTTP and HTTPS
+*/
+
 function serverBuild(req, res) {
     var parsedURL = url.parse(req.url, true);
     var resContentType = "text/plain";
@@ -96,7 +124,7 @@ function serverBuild(req, res) {
         res.end()
     }
 }
-/*
+
 try {
     const websrvConfig = yaml.load(fs.readFileSync('./config/websrv.config'));
     websrvConfig['sub-servers'].forEach(subsrv => {
@@ -116,10 +144,10 @@ try {
             openssl x509 -req -days 9999 -in csr.pem -signkey key.pem -out cert.pem
             rm csr.pem
 
-            
+            */            
             const ssl = {
-                key: fs.readFileSync('key.pem'),
-                cert: fs.readFileSync('cert.pem')
+                key: fs.readFileSync('./config/cert/key.pem'),
+                cert: fs.readFileSync('./config/cert/cert.pem')
             };
 
             https.createServer(ssl, function (req, res) { serverBuild(req, res) }).listen(subsrv.port)
@@ -129,10 +157,3 @@ try {
     console.error(err)
     //console.error('Error: Configuration file not found or impossible to open');
 }
-*/
-
-http.createServer(function(req, res) {
-    res.writeHead(200, { "Content-Type": "text/html" })
-    res.write('<h1>Hello world</h1>')
-    res.end()
-}).listen(80, '0.0.0.0');
