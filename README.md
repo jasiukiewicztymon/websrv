@@ -11,8 +11,9 @@ Here are explained all the sub-directories and files, their utility and dependen
 |-- config
 |     `-- websrv.config
 |     `-- cert
-|             `-- cert.pem
-|             `-- key.pem
+|             `-- cert.crt
+|             `-- ca_bundle.crt
+|             `-- priv.key
 |-- files
 |     `-- subserver
 |             `-- *.html
@@ -51,3 +52,7 @@ content-types: {
     "ext": "content-type"
 }
 ```
+
+## HTTPS & SSL
+
+Personnaly with [my domain name](https://gitproject.ch), I have created my certificate for 90 days with [ZeroSSL](https://zerossl.com/). The main reason is that it can give you a zip file with all the needed files which you have to rename.
