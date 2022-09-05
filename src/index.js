@@ -4,6 +4,8 @@ const url   = require('url');
 const http  = require('http')
 const https = require('https')
 
+const { exec } = require("child_process");
+
 /*
     The content type can be extended by the config file. You have to use a YAML object with the key as the extension of the file and the content-type as the value.
 */
@@ -129,6 +131,20 @@ try {
     const websrvConfig = yaml.load(fs.readFileSync('./config/websrv.config'));
     websrvConfig['sub-servers'].forEach(subsrv => {
         // build commands
+        
+        subsrv['build-command'].forEach(command => {
+            exec(command, (error, stdout, stderr) => {
+                if (error) {
+                    console.log(`error: ${error.message}`);
+                    return;
+                }
+                if (stderr) {
+                    console.log(`stderr: ${stderr}`);
+                    return;
+                }
+                console.log(`stdout: ${stdout}`);
+            });  
+        })
         
         // servers 
         if (subsrv.type == 'http') {
