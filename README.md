@@ -4,7 +4,7 @@ Websrv is **HTTP & HTTPS files share**, with *only client-side render* and possi
 
 ## Configuration overview
 
-The Websrv files are divided into **2 paths**. One of them is a **config folder** with only one config file, and the other one is a **folder with all the files for each sub-server**. You can use for example VueJs which is a client-side JavaScript framework, you have just to precise the build command.
+Here are explained all the sub-directories and files, their utility and dependences.
 
 ```
 /etc/websrv
@@ -14,8 +14,10 @@ The Websrv files are divided into **2 paths**. One of them is a **config folder*
 |             `-- cert.pem
 |             `-- key.pem
 |-- files
-|     `-- "http/https sub-servers folder"
-|             `-- "all sub-server files"
+|     `-- subserver
+|             `-- *.html
+|             `-- public
+|                       `-- *
 |-- index.js
 ```
 
@@ -28,10 +30,24 @@ sub-servers: [{
     name: "sub-server-name",
     type: "http",
     build-command: ["build command", "build command"],
-    content-type: "text/plain",
     domain: "src.gitproject.ch",
-    file-404: "404 response file",   
-    token: null,
+    map: [{
+        path: "/",
+        file: "index.html",
+        slash-id: null,
+        content-type: null,
+        token: null
+    }, {
+        path: "/faq",
+        file: "faq.html",
+        slash-id: true,
+        content-type: null,
+        token: null
+    }],
     port: 8080
-}]
+}],
+content-types: {
+    "ext": "content-type",
+    "ext": "content-type"
+}
 ```
