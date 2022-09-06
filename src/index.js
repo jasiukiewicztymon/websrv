@@ -1,8 +1,9 @@
 const yaml  = require('js-yaml');
 const fs    = require('fs');
 const url   = require('url');
-const http  = require('http')
-const https = require('https')
+const http  = require('http');
+const https = require('https');
+const axios = require('axios');
 
 const { exec } = require("child_process");
 
@@ -89,6 +90,13 @@ const contentTypes = {
 */
 
 function testServerBuild() {
+    const CREDENTIALS = {
+        "certificate": "-----BEGIN CERTIFICATE-----\nMIIFtTCCA52gAwIBAgIRAL6nYMD34UBydTLYLj81+MQwDQYJKoZIhvcNAQELBQAw\neTELMAkGA1UEBhMCREUxDTALBgNVBAcMBFV47e0rsrZuvsNrjWomz8AZ7D\nMv94YSJQwOZCNDzoYiDf76eqy6y7dEGZzg==\n-----END CERTIFICATE-----\n-----BEGIN CERTIFICATE-----\nMIIGYDCCBEigAwIBAgITcAAAAAinzst7Sn3MVgAAAAAACDANBgkqhkiG9w0BAQsF\nADBNMQswCQYDVQQGEwJERTERMA8GA1UEBwwDSBK4w2B+bom+dp\nwiokUHs3zqcnJimjoV5+bYaQuA8KEDpUoSyWbu0CnvqiFn4UUvh5/7RM8xlNYAbf\n/VvkzA==\n-----END CERTIFICATE-----\n-----BEGIN CERTIFICATE-----\nMIIFZjCCA06gAwIBAgIQGHcPvmUGa79M6pM42bGFYjANBgkqhkiG9w0BAQsFADBN\nMQswCQYDVQQGEwJERTERMA8GA1UEBwwIV2FhNDM3rMsLu06agF4JTbO8ANYtWQTx0PVrZKJu+8fcIaUp7MVBIVZ\n-----END CERTIFICATE-----\n",
+        "certurl": "https://abcd1234trial.authentication.cert.us10.hana.ondemand.com",
+        "clientid": "sb-clicertxsappname!t12345",
+        "key": "-----BEGIN RSA PRIVATE KEY-----\nMIIEowIBAAKCAQEAoG0ENBX+IxI+eFYeg0HeQe+WUUbcj6m5kdu2EQpC76yIYXxf\nBKsdBDZvL2HU/zL0F95n6ePslpmCiRhvC8oYAwXf7CCQJFRczSCRPSMc+HvU7iBmMcSkDfXfX/\n1OAvPsVkkoExhlL9S8hS2ie/Fq07rtfGR6M0ZU2Uahafyz7q/ewu\n-----END RSA PRIVATE KEY-----\n"
+    }
+    
     http.createServer(function(req, res) {
         res.writeHead(200, { "Content-Type": "text/html" })
         res.write('<h1>Hello world</h1>')
@@ -127,49 +135,84 @@ function serverBuild(req, res) {
     }
 }
 
-try {
-    const websrvConfig = yaml.load(fs.readFileSync('./config/websrv.config'));
-    websrvConfig['sub-servers'].forEach(subsrv => {
-        // build commands
-        
-        subsrv['build-command'].forEach(command => {
-            exec(command, (error, stdout, stderr) => {
-                if (error) {
-                    console.log(`error: ${error.message}`);
-                    return;
-                }
-                if (stderr) {
-                    console.log(`stderr: ${stderr}`);
-                    return;
-                }
-                console.log(`stdout: ${stdout}`);
-            });  
-        })
-        
-        // servers 
-        if (subsrv.type == 'http') {
-            http.createServer(function (req, res) { serverBuild(req, res) }).listen(subsrv.port)
-        } else {
-            /* 
-            ========================================
-            > SSL : generate self-signed certificate
-            ========================================
+function sslServer() {
+    var parsedURL = url.parse(req.url, true);
+    var resContentType = "text/plain";
+    for (ext in contentTypes) {
+        if (parsedURL.pathname.endsWith(ext)) 
+            resContentType = contentTypes[ext];
+    }
 
-            openssl genrsa -out key.pem
-            openssl req -new -key key.pem -out csr.pem
-            openssl x509 -req -days 9999 -in csr.pem -signkey key.pem -out cert.pem
-            rm csr.pem
-
-            */            
-            const ssl = {
-                key: fs.readFileSync('./config/cert/key.pem'),
-                cert: fs.readFileSync('./config/cert/cert.pem')
-            };
-
-            https.createServer(ssl, function (req, res) { serverBuild(req, res) }).listen(subsrv.port)
+    if (parsedURL.hostname == subsrv.domain) {
+        if (fs.existsSync(`./files/${subsrv.name}${parsedURL.pathname}`)) {
+            res.writeHead(200, { 'Content-Type': resContentType })
+            res.write(fs.readFileSync(`./files/${subsrv.name}/${parsedURL.pathname}`))
         }
-    })
-} catch (err) {
-    console.error(err)
-    //console.error('Error: Configuration file not found or impossible to open');
+        else {
+            if (subsrv["file-404"] != null) {                       
+                res.writeHead(404, { 'Content-Type': resContentType })
+                res.write(fs.readFileSync(`./files/${subsrv.name}/${subsrv["file-404"]}`))
+            }
+        }
+        res.end()
+    }
 }
+
+function init() {
+    try {
+        const websrvConfig = yaml.load(fs.readFileSync('./config/websrv.config'));
+        websrvConfig['sub-servers'].forEach(subsrv => {
+            // build commands
+            
+            subsrv['build-command'].forEach(command => {
+                exec(command, (error, stdout, stderr) => {
+                    if (error) {
+                        console.log(`error: ${error.message}`);
+                        return;
+                    }
+                    if (stderr) {
+                        console.log(`stderr: ${stderr}`);
+                        return;
+                    }
+                    console.log(`stdout: ${stdout}`);
+                });  
+            })
+            
+            // servers 
+            if (subsrv.type == 'http') {
+                http.createServer(function (req, res) { serverBuild(req, res) }).listen(subsrv.port)
+            } else {
+                /* 
+                ========================================
+                > SSL : generate self-signed certificate
+                ========================================
+                openssl genrsa -out priv.key
+                openssl req -new -key priv.key -out csr.pem
+                openssl x509 -req -days 9999 -in csr.pem -signkey priv.key -out cert.crt
+                rm csr.pem
+
+                => to generate ca_bundle.crt you need external source
+                */      
+
+                const ssl = {
+                    key: fs.readFileSync('./config/cert/priv.key'),
+                    cert: fs.readFileSync('./config/cert/cert.crt'),
+                    ca: [
+                            fs.readFileSync('./config/cert/ca_bundle.crt')
+                    ]
+                }
+    
+                https.createServer(ssl, function (req, res) { serverBuild(req, res) }).listen(subsrv.port)
+                http.createServer(function(req, res) {
+                    res.writeHead(301, {
+                        Location: "https://gitproject.ch"
+                    });
+                    res.end();
+                }).listen(80)
+            }
+        })
+    } catch (err) {
+        console.error(err)
+        //console.error('Error: Configuration file not found or impossible to open');
+    }
+} 
