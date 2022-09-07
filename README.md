@@ -56,3 +56,5 @@ content-types: {
 ## HTTPS & SSL
 
 Personnaly with [my domain name](https://gitproject.ch), I have created my certificate for 90 days with [ZeroSSL](https://zerossl.com/). The main reason is that it can give you a zip file with all the needed files which you have to rename.
+
+To create a CA SSL certificate use [this video](https://youtu.be/dDU178Uezc0) with open SSL.
