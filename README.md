@@ -2,6 +2,8 @@
 
 Websrv is **HTTP & HTTPS files share**, with *only client-side render* and possibility of server-side code with an *API*.
 
+Create different POST/GET server, API, FTP, WEB.
+
 ## Configuration overview
 
 Here are explained all the sub-directories and files, their utility and dependences.
