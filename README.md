@@ -1,62 +1,16 @@
 # Websrv
 
-Websrv is **HTTP & HTTPS files share**, with *only client-side render* and possibility of server-side code with an *API*.
+**Websrv**, is a static website server for localhost testing, that can use *HTTP* and *HTTPS*. Your files have to be put inside the `/public`, and don't forget to fill in the `.env.example`.
 
-Create different POST/GET server, API, FTP, WEB.
+## SSL
 
-## Configuration overview
+To generate the localhost SSL certificate, use this command: 
 
-Here are explained all the sub-directories and files, their utility and dependences.
-
-```
-/etc/websrv
-|-- config
-|     `-- websrv.config
-|     `-- cert
-|             `-- cert.crt
-|             `-- ca_bundle.crt
-|             `-- priv.key
-|-- files
-|     `-- subserver
-|             `-- *.html
-|             `-- public
-|                       `-- *
-|-- index.js
+```sh
+openssl req -x509 -out localhost.crt -keyout localhost.key   -newkey rsa:2048 -nodes -sha256   -subj '/CN=localhost' -extensions EXT -config <( \
+   printf "[dn]\nCN=localhost\n[req]\ndistinguished_name = dn\n[EXT]\nsubjectAltName=DNS:localhost\nkeyUsage=digitalSignature\nextendedKeyUsage=serverAuth")
 ```
 
-## Configuration file
+## To-do
 
-Example of the configuration file is based on a object for each sub-server. We can find all the proprieties needed to respond to a request.
-
-```yml 
-sub-servers: [{
-    name: "sub-server-name",
-    type: "http",
-    build-command: ["build command", "build command"],
-    domain: "src.gitproject.ch",
-    map: [{
-        path: "/",
-        file: "index.html",
-        slash-id: null,
-        content-type: null,
-        token: null
-    }, {
-        path: "/faq",
-        file: "faq.html",
-        slash-id: true,
-        content-type: null,
-        token: null
-    }],
-    port: 8080
-}],
-content-types: {
-    "ext": "content-type",
-    "ext": "content-type"
-}
-```
-
-## HTTPS & SSL
-
-Personnaly with [my domain name](https://gitproject.ch), I have created my certificate for 90 days with [ZeroSSL](https://zerossl.com/). The main reason is that it can give you a zip file with all the needed files which you have to rename.
-
-To create a CA SSL certificate use [this video](https://youtu.be/dDU178Uezc0) with open SSL.
+- [ ] Realtime changes reload
