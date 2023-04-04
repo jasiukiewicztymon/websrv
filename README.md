@@ -2,6 +2,15 @@
 
 **Websrv**, is a static website server for localhost testing, that can use *HTTP* and *HTTPS*. Your files have to be put inside the `/public`, and don't forget to fill in the `.env.example`.
 
+## Getting started
+
+```sh
+git clone https://github.com/jasiukiewicztymon/websrv.git
+cd websrv
+npm i
+node .
+```
+
 ## SSL
 
 To generate the localhost SSL certificate, use this command: 
