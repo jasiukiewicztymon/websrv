@@ -20,6 +20,34 @@ openssl req -x509 -out localhost.crt -keyout localhost.key   -newkey rsa:2048 -n
    printf "[dn]\nCN=localhost\n[req]\ndistinguished_name = dn\n[EXT]\nsubjectAltName=DNS:localhost\nkeyUsage=digitalSignature\nextendedKeyUsage=serverAuth")
 ```
 
+## Websocket scripts
+
+### WS (http)
+
+```html
+<script>
+     const exampleSocket = new WebSocket(
+             "ws://localhost:8090/"
+         );
+         exampleSocket.onmessage = (event) => {
+             window.location.reload();
+         };
+ </script>
+```
+
+### WSS (https)
+
+```html
+<script>
+     const exampleSocket = new WebSocket(
+             "wss://localhost:8091/"
+         );
+         exampleSocket.onmessage = (event) => {
+             window.location.reload();
+         };
+ </script>
+```
+
 ## To-do
 
-- [ ] Realtime changes reload
+- [x] Realtime changes reload
