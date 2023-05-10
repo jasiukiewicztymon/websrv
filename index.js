@@ -24,7 +24,7 @@ function serveFile(req, res) {
     const q = url.parse(req.url, true);
     fs.readFile(`${__dirname}/public${q.path || '/'}`, function(err, data) {
         if (err) {
-            fs.readFile(`/error/404.html`, function(err, data) {
+            fs.readFile(`${__dirname}/error/404.html`, function(err, data) {
                 res.writeHead(404, { 'Content-Type': 'text/html' });
                 res.end(data);
             });
