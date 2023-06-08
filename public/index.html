@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>404</title>
+    <title>WebSrv</title>
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Montserrat&display=swap');
@@ -29,8 +29,17 @@
 </head>
 <body>
     <div>
-        <h1>Oupssss 404</h1>
-        <p>The page you are looking for doesn't exist...</p>
+        <h1>Welcome to test WebSrv</h1>
+        <p>Feel free to change the .env file to configure your web server.</p>
     </div>
+
+    <script>
+        const exampleSocket = new WebSocket(
+                "ws://localhost:8090/"
+            );
+            exampleSocket.onmessage = (event) => {
+                window.location.reload();
+            };
+    </script>
 </body>
 </html>

@@ -10,22 +10,32 @@ const mime = require('mime');
 
 require('dotenv').config();
 
-const PORT = process.env.PORT || 8080;
-const WSPORT = process.env.WSPORT || 8090;
-const PROTOCOL = process.env.PROTOCOL || 'http';
+let p = process.env.PORT || 8080, wp = process.env.WSPORT || 8090;
+
+const PORT = parseInt(p);
+const WSPORT = parseInt(wp);
+const PROTOCOL = process.env.SECURE == 'true' ? 'https' : 'http';
 const LOG = process.env.LOG == 'true' || false;
-const PATH_TRAVERSAL = process.env.PATH_TRAVERSAL == 'true' || true;
 
 var WSSERVER = null;
 
+function pathSecure(path) {
+    path = path.split('/');
+    let new_path = [];
+    for (let i = 0; i < path.length - 1; i++) {
+        if (path[i] != '..') { new_path.push(path[i]); }
+        else if (new_path.length > 0) { new_path.pop(); }
+    }    
+    return '/' + new_path.join('/') + path.at(-1);
+}
+
 function serveFile(req, res) {
     const splitUrl = req.url.split('.');
-    if (LOG)
-        console.log(`Handling request on: ${req.url} (${mime.getType(splitUrl[splitUrl.length - 1])})`)
+
+    if (LOG) console.log(`Handling request on: ${req.url} (${mime.getType(splitUrl[splitUrl.length - 1])})`)
 
     const q = url.parse(req.url, true);
-    console.log(q)
-    fs.readFile(`${__dirname}/public${q.path || '/'}`, function (err, data) {
+    fs.readFile(`${__dirname}/public${pathSecure(q.path) || '/index.html'}`, function (err, data) {
         if (err) {
             fs.readFile(`${__dirname}/error/404.html`, function (err, data) {
                 res.writeHead(404, { 'Content-Type': 'text/html' });
@@ -40,14 +50,12 @@ function serveFile(req, res) {
 
 http.createServer(function (req, res) {
     const q = url.parse(req.url, true);
-    console.log(q)
 
     if (PROTOCOL == 'https') {
         res.writeHead(302, { 'Location': `https://localhost:${PORT + 1}${q.path}` });
         res.end();
     }
-
-    serveFile(req, res);
+    else serveFile(req, res);
 }).listen(PORT);
 console.log(`http listening on: https://localhost:${PORT}/`)
 
@@ -80,7 +88,7 @@ fs.watch(`${__dirname}/public`, {
     recursive: true
 }, (event, filename) => {
     if (filename) {
-        console.log(`Server socket update: ${filename}:${event}`)
+        if (LOG) console.log(`Server socket update: ${filename}:${event}`)
         WSSERVER.clients.forEach(client => {
             if (client.readyState === OPEN) {
                 client.send(`${filename}:${event}`);
