@@ -1,18 +1,20 @@
-const https = require('https'); 
-const http  = require('http');
-const url   = require('url');
-const fs    = require('fs'); 
+const https = require('https');
+const http = require('http');
+const url = require('url');
+const fs = require('fs');
+
 
 const { WebSocketServer, OPEN } = require('ws');
 
 const mime = require('mime');
 
 require('dotenv').config();
- 
-const PORT      = process.env.PORT || 8080;
-const WSPORT    = process.env.WSPORT || 8090;
-const PROTOCOL  = process.env.PROTOCOL || 'http';
-const LOG       = process.env.LOG == 'true' || false;
+
+const PORT = process.env.PORT || 8080;
+const WSPORT = process.env.WSPORT || 8090;
+const PROTOCOL = process.env.PROTOCOL || 'http';
+const LOG = process.env.LOG == 'true' || false;
+const PATH_TRAVERSAL = process.env.PATH_TRAVERSAL == 'true' || true;
 
 var WSSERVER = null;
 
@@ -22,9 +24,10 @@ function serveFile(req, res) {
         console.log(`Handling request on: ${req.url} (${mime.getType(splitUrl[splitUrl.length - 1])})`)
 
     const q = url.parse(req.url, true);
-    fs.readFile(`${__dirname}/public${q.path || '/'}`, function(err, data) {
+    console.log(q)
+    fs.readFile(`${__dirname}/public${q.path || '/'}`, function (err, data) {
         if (err) {
-            fs.readFile(`${__dirname}/error/404.html`, function(err, data) {
+            fs.readFile(`${__dirname}/error/404.html`, function (err, data) {
                 res.writeHead(404, { 'Content-Type': 'text/html' });
                 res.end(data);
             });
@@ -37,9 +40,10 @@ function serveFile(req, res) {
 
 http.createServer(function (req, res) {
     const q = url.parse(req.url, true);
+    console.log(q)
 
     if (PROTOCOL == 'https') {
-        res.writeHead(302, {'Location': `https://localhost:${PORT + 1}${q.path}`});
+        res.writeHead(302, { 'Location': `https://localhost:${PORT + 1}${q.path}` });
         res.end();
     }
 
@@ -64,9 +68,9 @@ else {
         cert: fs.readFileSync(`${__dirname}/cert/localhost.crt`),
         key: fs.readFileSync(`${__dirname}/cert/localhost.key`)
     });
-      
+
     WSSERVER = new WebSocketServer({ server });
-      
+
     server.listen(WSPORT + 1);
     console.log(`websocket (secure) listening on: wss://localhost:${WSPORT + 1}/`)
 }
